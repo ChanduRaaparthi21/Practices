@@ -2,58 +2,61 @@ package com.chandu.quizservice.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.chandu.common.events.QuizCreatedEvent;
+import com.chandu.quizservice.kafka.QuizEventProducer;
 import com.chandu.quizservice.model.QuestionWrapper;
 import com.chandu.quizservice.model.QuizDto;
 import com.chandu.quizservice.model.Response;
 import com.chandu.quizservice.service.QuizService;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("quiz")
 public class QuizController {
-	
+
 	@Autowired
-	QuizService quizService;
-	
-//	@PostMapping("create")
-//	public ResponseEntity<String> createQuiz(@RequestBody QuizDto quizDto){
-//
-//		return quizService.createQuiz(quizDto.getCategoryName(), quizDto.getNumOfQuestions(), quizDto.getTitle());
-//
-//	}
-@PostMapping("create")
-public ResponseEntity<String> createQuiz(@RequestBody QuizDto quizDto) {
-	System.out.println("Category: " + quizDto.getCategoryName());
-	System.out.println("Number of Questions: " + quizDto.getNumOfQuestions());
-	System.out.println("Title: " + quizDto.getTitle());
+	private QuizService quizService;
 
-	return quizService.createQuiz(quizDto.getCategoryName(), quizDto.getNumOfQuestions(), quizDto.getTitle());
-}
+	@Autowired
+	private QuizEventProducer quizEventProducer;
 
+	// ✅ FIXED createQuiz
+	@PostMapping("create")
+	public ResponseEntity<String> createQuiz(@RequestBody QuizDto quizDto) {
 
+		// Step 1: Create quiz using your normal flow
+		ResponseEntity<String> quizResponse =
+				quizService.createQuiz(
+						quizDto.getCategoryName(),
+						quizDto.getNumOfQuestions(),
+						quizDto.getTitle()
+				);
 
-	@GetMapping("get/{id}")
-	public ResponseEntity<List<QuestionWrapper>> getQuizQuestions(@PathVariable Integer id){
-		return quizService.getQuizQuestions(id);  		
-		
+		// Step 2: Create Kafka event
+		QuizCreatedEvent event = new QuizCreatedEvent(
+				quizDto.getCategoryName(),
+				quizDto.getNumOfQuestions(),
+				quizDto.getTitle()
+		);
+
+		// Step 3: Publish event to Kafka
+		quizEventProducer.publish(event);
+
+		// Step 4: Send response back to client
+		return ResponseEntity.ok("Quiz created & event sent successfully");
 	}
-	
+
+	// Existing Endpoints
+	@GetMapping("get/{id}")
+	public ResponseEntity<List<QuestionWrapper>> getQuizQuestions(@PathVariable Integer id) {
+		return quizService.getQuizQuestions(id);
+	}
+
 	@PostMapping("submit/{id}")
 	public ResponseEntity<Integer> submitQuiz(@PathVariable Integer id, @RequestBody List<Response> responses) {
-		//TODO: process POST request
-		
-		return quizService.calculateResult(id, responses); 
+		return quizService.calculateResult(id, responses);
 	}
-	
-
 }
