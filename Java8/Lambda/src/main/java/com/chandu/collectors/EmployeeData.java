@@ -1,4 +1,4 @@
-package com.chandu.streams.ex1;
+package com.chandu.collectors;
 
 import java.util.ArrayList;
 import java.util.Arrays;

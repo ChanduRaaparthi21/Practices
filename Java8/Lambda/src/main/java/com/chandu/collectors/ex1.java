@@ -1,7 +1,6 @@
-package com.chandu.streams.ex1;
+package com.chandu.collectors;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ex1 {
@@ -11,103 +10,109 @@ public class ex1 {
         List<Employee> employees = EmployeeData.get();
 
 
-        // Print all employees
-       /* employees.stream()
-                .forEach(e-> System.out.println(e));*/
+        // Join Employee First Names with comma separator\
+       /* String empFirstNameJoined = employees.stream()
+                .map(e -> e.getFirstName())
+                .collect(Collectors.joining(", "));
+        System.out.println("Employee First Names: " + empFirstNameJoined);*/
+
+
+        // Partition Employees based on salary > 50000
+        /*Map<Boolean, List<Employee>> collect = employees.stream()
+                .collect(Collectors.partitioningBy(e -> e.getSalary() > 50000.0));
+        System.out.println(collect);*/
+
+
+        // Count Employees based on salary > 50000
+        /*Map<Boolean, Long> empCountBySalary50k = employees.stream()
+                .collect(Collectors.partitioningBy(e -> e.getSalary() > 50000.0, Collectors.counting()));
+        System.out.println(empCountBySalary50k);*/
+
+
+        // Group Employees by Department
+        /*Map<String, List<Employee>> empGroupByDepartment = employees.stream()
+                .collect(Collectors.groupingBy(e->e.getDepartment()));
+        System.out.println(empGroupByDepartment);*/
 
 
 
 
-        // Print employees with salary greater than 20000 and last name starting with 'D'
-        /*employees.stream()
-                .filter(e->e.getSalary()>20000.0)
-                .filter(e->e.getLastName().startsWith("D"))
-                .forEach(e-> System.out.println(e));*/
+        // Count Employees by Department
+        /*Map<String, Long> empCountByDepartment = employees.stream()
+                .collect(Collectors.groupingBy(e -> e.getDepartment(), Collectors.counting()));
+        System.out.println(empCountByDepartment);*/
 
 
-// Print employees sorted by first name
-           /* employees.stream()
-                    .sorted((e1,e2)->e1.getFirstName().compareTo(e2.getFirstName()))
-                    .forEach(e-> System.out.println(e));*/
+        // Get Employee First Names by Department
+        /*Map<String, List<String>> empFirstNameByDepartment = employees.stream()
+                .collect(Collectors.groupingBy(e -> e.getDepartment(),
+                        Collectors.mapping(e -> e.getFirstName(),
+                                Collectors.toList())));
+        System.out.println(empFirstNameByDepartment);*/
 
 
-        // Print first names of employees sorted alphabetically
-        /*employees.stream()
-                .map(e->e.getFirstName())
-                .sorted()
-                .forEach(e-> System.out.println(e));*/
+        // Get Sum of Employee Salaries by Department
+        /*Map<String, Optional<Double>> empSalarySumByDepart = employees.stream()
+                .collect(Collectors.groupingBy(e -> e.getDepartment(),
+                        Collectors.mapping(e -> e.getSalary(),
+                                Collectors.reducing((a, b) -> a + b))));
+        System.out.println(empSalarySumByDepart);*/
 
+        //or
 
-
-        // Print employees from IT department
-        /*employees.stream()
-                .filter(e->e.getDepartment().equals("IT"))
-                .forEach(e-> System.out.println(e));*/
-
-
-
-
-        // Count number of employees in IT department
-        /*System.out.println(
-        employees.stream()
-                .filter(e->e.getDepartment().equals("IT"))
-                .count());*/
-
-
-        // Calculate total salary of employees in IT department
-       /* System.out.println(employees.stream()
-                        .filter(e->e.getDepartment().equals("IT"))
-                .mapToDouble(e -> e.getSalary())
-                .sum());*/
+        // Get Sum of Employee Salaries by Department - simpler way using summingDouble collector
+        /*Map<String, Double> empSalarySumByDepart = employees.stream()
+                .collect(Collectors.groupingBy(e -> e.getDepartment(),
+                        Collectors.summingDouble(e -> e.getSalary())));
+        System.out.println(empSalarySumByDepart);*/
 
 
 
-        // Find the maximum salary among all employees
-        /*System.out.println(
-        employees.stream()
-                .mapToDouble(e->e.getSalary())
-                .max());
+        // Get Summary of Employee Salaries by Department
+       /* Map<String, DoubleSummaryStatistics> summaryOfSalaryByDept = employees
+                .stream()
+                .collect(Collectors.groupingBy(e -> e.getDepartment(),
+                        Collectors.summarizingDouble(e -> e.getSalary())));
+        System.out.println(summaryOfSalaryByDept);
 */
 
 
-        // Get a list of distinct first names of employees
-     /*   List<String> empNames = employees.stream()
-                .map(e -> e.getFirstName())
-                .distinct()
-                .toList();
-        System.out.println(empNames);*/
+        // Get Summary of Employee Ages by Department
+         /* Map<Object, IntSummaryStatistics> summaryOfSalaryByDept = employees
+                .stream()
+                .collect(Collectors.groupingBy(e -> e.getDepartment(),
+                        Collectors.summarizingInt(e -> e.getAge())));
+        System.out.println(summaryOfSalaryByDept);*/
 
 
-      /*  List<String> empNames = employees.stream()
-                .map(e -> e.getFirstName())
-                .distinct()
-                .collect(Collectors.toList());
-        System.out.println(empNames);*/
+        // Get Summary of Salaries of IT Developers
+        /*DoubleSummaryStatistics ItDevSalarySummary = employees.stream()
+                .collect(Collectors.filtering(e -> e.getDepartment().equals("IT"),
+                        Collectors.summarizingDouble(e -> e.getSalary())));
+        System.out.println(ItDevSalarySummary);
+*/
 
 
+        // Get Elder Employee of the Company
+        /*Optional<Employee> elderOfThisCompany = employees.stream()
+                .collect(Collectors.maxBy((a1, a2) -> a1.getAge() - a2.getAge()));
+        System.out.println(elderOfThisCompany);*/
 
-        // Get an unmodifiable list of distinct first names of employees
-       /* List<String> empNames = employees.stream()
-                .map(e -> e.getFirstName())
-                .distinct()
-                .collect(Collectors.toUnmodifiableList());
-//        empNames.add("chandu");
-        System.out.println(empNames);*/
+        //OR
 
-
-
-        // Create a map of employee first names to their salaries
-
-        /*Map<String, String> empToMap = employees.stream()
-                .collect(Collectors.toMap(
-                        e -> e.getFirstName(),
-                        e -> String.valueOf(e.getSalary()),
-                        (a,b)-> a+" , "+ b
-                ))
-                ;
-        System.out.println(empToMap);*/
+        /*Optional<Employee> elderOfThisCompany = employees.stream()
+                .collect(Collectors.maxBy((Comparator.comparing(Employee::getAge))));
+        System.out.println(elderOfThisCompany);*/
 
 
+        // Get First Name of the Highest Paid Employee or "No Employee Found" if list is empty
+      /*  String noEmployeeFound = employees.stream()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.maxBy(Comparator.comparing(Employee::getSalary)),
+                        EmpOpt -> EmpOpt.map(e -> e.getFirstName()).orElse("No Employee Found")
+                ));
+        System.out.println(noEmployeeFound);
+*/
 
     }
 }

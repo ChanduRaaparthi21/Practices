@@ -1,4 +1,4 @@
-package com.chandu.streams.ex1;
+package com.chandu.collectors;
 
 public class Employee {
 
