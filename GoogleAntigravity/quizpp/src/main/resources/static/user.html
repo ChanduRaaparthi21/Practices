@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizApp - User Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="#" class="logo">⚡ QuizApp</a>
+            <div class="nav-links">
+                <a href="#" class="nav-link" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Available Quizzes</h2>
+            <button onclick="showCreateQuiz()" class="btn btn-secondary">Create New Quiz</button>
+        </div>
+
+        <div id="createQuizSection" class="card fade-in" style="display: none; margin-top: 1.5rem;">
+            <h3>Create a Quiz</h3>
+            <form id="createQuizForm" style="margin-top: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Quiz Title</label>
+                    <input type="text" id="quizTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Select Questions</label>
+                    <div id="questionsList"
+                        style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 1rem; border-radius: var(--border-radius);">
+                        <!-- Questions will be loaded here -->
+                        Loading questions...
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Create Quiz</button>
+                    <button type="button" onclick="hideCreateQuiz()" class="btn btn-outline">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="quizList" class="dashboard-grid" style="margin-top: 1.5rem;">
+            <!-- Quizzes will be loaded here -->
+            <div class="card">Loading quizzes...</div>
+        </div>
+
+        <h2 style="margin-top: 3rem;">Your Past Scores</h2>
+        <div id="scoreList" style="margin-top: 1.5rem;">
+            <!-- Scores will be loaded here -->
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        checkAuth();
+
+        async function loadDashboard() {
+            try {
+                // Load Quizzes
+                const quizzes = await api.getAllQuizzes();
+                const quizContainer = document.getElementById('quizList');
+
+                if (quizzes.length === 0) {
+                    quizContainer.innerHTML = '<p>No quizzes available.</p>';
+                } else {
+                    quizContainer.innerHTML = quizzes.map(quiz => `
+                        <div class="card fade-in">
+                            <h3>${quiz.title}</h3>
+                            <p class="text-light" style="margin: 0.5rem 0 1.5rem;">Test your knowledge!</p>
+                            <button onclick="startQuiz(${quiz.id})" class="btn btn-primary">Start Quiz</button>
+                        </div>
+                    `).join('');
+                }
+
+                // Load Scores
+                const scores = await api.getUserScores();
+                const scoreContainer = document.getElementById('scoreList');
+
+                if (scores.length === 0) {
+                    scoreContainer.innerHTML = '<p>No past attempts.</p>';
+                } else {
+                    scoreContainer.innerHTML = scores.map(score => `
+                        <div class="card fade-in" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3>${score.quiz.title}</h3>
+                                <p class="text-light">Submitted on ${new Date(score.submittedAt).toLocaleDateString()}</p>
+                            </div>
+                            <div class="stat-value" style="font-size: 1.5rem;">
+                                ${score.score} pts
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (err) {
+                console.error(err);
+                showError('Failed to load dashboard data');
+            }
+        }
+
+        function startQuiz(id) {
+            window.location.href = `/quiz.html?id=${id}`;
+        }
+
+        async function showCreateQuiz() {
+            document.getElementById('createQuizSection').style.display = 'block';
+            const container = document.getElementById('questionsList');
+            try {
+                const questions = await api.getAllQuestions();
+                if (questions.length === 0) {
+                    container.innerHTML = '<p>No questions available.</p>';
+                } else {
+                    container.innerHTML = questions.map(q => `
+                        <div style="margin-bottom: 0.5rem; display: flex; align-items: center;">
+                            <input type="checkbox" name="qSelect" value="${q.id}" id="q${q.id}" style="margin-right: 0.5rem; width: 1.2rem; height: 1.2rem;">
+                            <label for="q${q.id}" style="cursor: pointer;">${q.title}</label>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                container.innerHTML = '<p class="text-error">Failed to load questions.</p>';
+            }
+        }
+
+        function hideCreateQuiz() {
+            document.getElementById('createQuizSection').style.display = 'none';
+        }
+
+        document.getElementById('createQuizForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('quizTitle').value;
+            const checkboxes = document.querySelectorAll('input[name="qSelect"]:checked');
+            const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            if (ids.length === 0) {
+                alert('Please select at least one question.');
+                return;
+            }
+
+            try {
+                await api.createQuiz({ title, questionIds: ids });
+                alert('Quiz created successfully!');
+                hideCreateQuiz();
+                loadDashboard(); // Reload list
+            } catch (err) {
+                showError('Failed to create quiz');
+            }
+        });
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>

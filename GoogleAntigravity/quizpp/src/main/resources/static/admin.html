@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizApp - Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="#" class="logo">⚡ QuizApp Admin</a>
+            <div class="nav-links">
+                <a href="#" class="nav-link" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <div class="card stat-card">
+                <div class="stat-value">Create Question</div>
+                <p class="stat-label">Add new questions to the bank</p>
+                <button onclick="showSection('question-form')" class="btn btn-primary"
+                    style="margin-top: 1rem;">Create</button>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-value">Create Quiz</div>
+                <p class="stat-label">Assemble questions into a quiz</p>
+                <button onclick="showSection('quiz-form')" class="btn btn-secondary"
+                    style="margin-top: 1rem;">Create</button>
+            </div>
+        </div>
+
+        <!-- Create Question Form -->
+        <div id="question-form" class="card fade-in" style="display: none; margin-top: 2rem;">
+            <h2>Create New Question</h2>
+            <form id="createQuestionForm" style="margin-top: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">Question Title</label>
+                    <input type="text" id="qTitle" class="form-control" required>
+                </div>
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="form-group">
+                        <label class="form-label">Option 1</label>
+                        <input type="text" id="qOp1" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Option 2</label>
+                        <input type="text" id="qOp2" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Option 3</label>
+                        <input type="text" id="qOp3" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Option 4</label>
+                        <input type="text" id="qOp4" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correct Answer</label>
+                    <input type="text" id="qCorrect" class="form-control"
+                        placeholder="Must match one of the options exactly" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Question</button>
+            </form>
+        </div>
+
+        <!-- Create Quiz Form -->
+        <div id="quiz-form" class="card fade-in" style="display: none; margin-top: 2rem;">
+            <h2>Create New Quiz</h2>
+            <form id="createQuizForm" style="margin-top: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">Quiz Title</label>
+                    <input type="text" id="quizTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Question IDs (comma separated)</label>
+                    <input type="text" id="quizQIds" class="form-control" placeholder="e.g. 1, 2, 3" required>
+                    <small class="text-light">Enter IDs of questions to include.</small>
+                </div>
+                <button type="submit" class="btn btn-secondary">Create Quiz</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        checkAuth();
+
+        function showSection(id) {
+            document.getElementById('question-form').style.display = 'none';
+            document.getElementById('quiz-form').style.display = 'none';
+            document.getElementById(id).style.display = 'block';
+        }
+
+        document.getElementById('createQuestionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = {
+                title: document.getElementById('qTitle').value,
+                option1: document.getElementById('qOp1').value,
+                option2: document.getElementById('qOp2').value,
+                option3: document.getElementById('qOp3').value,
+                option4: document.getElementById('qOp4').value,
+                correctAnswer: document.getElementById('qCorrect').value
+            };
+
+            try {
+                await api.createQuestion(question);
+                alert('Question created successfully!');
+                e.target.reset();
+            } catch (err) {
+                showError('Failed to create question');
+            }
+        });
+
+        document.getElementById('createQuizForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const ids = document.getElementById('quizQIds').value.split(',').map(id => parseInt(id.trim()));
+            const quiz = {
+                title: document.getElementById('quizTitle').value,
+                questionIds: ids
+            };
+
+            try {
+                await api.createQuiz(quiz);
+                alert('Quiz created successfully!');
+                e.target.reset();
+            } catch (err) {
+                showError('Failed to create quiz');
+            }
+        });
+    </script>
+</body>
+
+</html>
