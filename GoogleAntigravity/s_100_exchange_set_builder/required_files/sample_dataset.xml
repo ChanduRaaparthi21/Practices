@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset>
+    <Header>
+        <Name>Sample S-100 Dataset</Name>
+        <Version>1.0</Version>
+        <Date>2025-11-26</Date>
+    </Header>
+    <Content>
+        <Feature>
+            <ID>1</ID>
+            <Type>Bathymetry</Type>
+            <Coordinates>12.34, 56.78</Coordinates>
+            <Depth>100m</Depth>
+        </Feature>
+        <Feature>
+            <ID>2</ID>
+            <Type>Coastline</Type>
+            <Coordinates>12.35, 56.79</Coordinates>
+        </Feature>
+    </Content>
+</Dataset>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<S101DataSet>
+  <identifier>S101_DS_001</identifier>
+  <editionNumber>1</editionNumber>
+  <issueDate>2025-01-01</issueDate>
+  <boundingBox>
+    <west>73.0</west>
+    <south>12.0</south>
+    <east>78.0</east>
+    <north>15.0</north>
+  </boundingBox>
+  <featureCount>120</featureCount>
+  <producer>Test Hydrographic Office</producer>
+</S101DataSet>

@@ -37,6 +37,9 @@ public class ContentService {
     @Autowired
     private SignatureUtils signatureUtils;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Transactional
     public ContentItem addContent(Long exchangeSetId, MultipartFile file, ContentType contentType) throws IOException {
         ExchangeSet exchangeSet = exchangeSetRepository.findById(exchangeSetId)
@@ -71,6 +74,8 @@ public class ContentService {
         // Update CATALOG.XML
         exchangeSet.getContentItems().add(contentItem); // Add to list for XML generation
         updateCatalogXml(exchangeSet);
+
+        auditLogService.logContentAdded(fileName, exchangeSet.getName());
 
         return contentItem;
     }

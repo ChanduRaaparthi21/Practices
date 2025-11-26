@@ -16,6 +16,62 @@
 
 ---
 
+## 🧪 Quick Start: Testing with Generated Files
+
+I have generated a set of required files for you in the `required_files/` directory. You can use these files to test the application immediately.
+
+### Files Available:
+- **Security**: `required_files/private_key.pem`, `required_files/certificate.crt`
+- **Data**: `required_files/sample_dataset.xml`
+
+### Step-by-Step Testing Flow:
+
+#### 1. Login
+- **Endpoint**: `POST /auth/login`
+- **Body**: `{"username": "admin", "password": "admin123"}`
+- **Action**: Copy the `token` from the response.
+
+#### 2. Set Workspace
+- **Endpoint**: `POST /workspace`
+- **Header**: `Authorization: Bearer <your_token>`
+- **Body**: `{"path": "C:\\Temp\\s100_workspace"}` (or any valid path on your machine)
+
+#### 3. Upload Security Files
+- **Endpoint**: `POST /resources`
+- **Header**: `Authorization: Bearer <your_token>`
+- **Request 1**:
+    - `file`: Select `required_files/private_key.pem`
+    - `type`: `PRIVATE_KEY`
+    - **Note ID**: Note the `id` returned (e.g., `1`).
+- **Request 2**:
+    - `file`: Select `required_files/certificate.crt`
+    - `type`: `CERTIFICATE`
+
+#### 4. Create Exchange Set
+- **Endpoint**: `POST /exchange-sets`
+- **Header**: `Authorization: Bearer <your_token>`
+- **Body**: `{"name": "Test_Set_001"}`
+- **Note ID**: Note the `id` returned (e.g., `1`).
+
+#### 5. Add Dataset
+- **Endpoint**: `POST /content/{exchangeSetId}` (e.g., `/content/1`)
+- **Header**: `Authorization: Bearer <your_token>`
+- **Request**:
+    - `file`: Select `required_files/sample_dataset.xml`
+    - `type`: `DATASET`
+- **Note ID**: Note the `id` returned (e.g., `1`).
+
+#### 6. Sign Content
+- **Endpoint**: `POST /content/{contentId}/sign?privateKeyId={privateKeyId}` (e.g., `/content/1/sign?privateKeyId=1`)
+- **Header**: `Authorization: Bearer <your_token>`
+
+#### 7. Package Exchange Set
+- **Endpoint**: `POST /exchange-sets/{exchangeSetId}/package` (e.g., `/exchange-sets/1/package`)
+- **Header**: `Authorization: Bearer <your_token>`
+- **Action**: Save the downloaded ZIP file.
+
+---
+
 ## 📋 Base Configuration
 
 ### Base URL

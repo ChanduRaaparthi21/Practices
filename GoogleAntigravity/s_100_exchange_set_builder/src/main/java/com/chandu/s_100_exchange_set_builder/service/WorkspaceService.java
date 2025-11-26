@@ -24,6 +24,9 @@ public class WorkspaceService {
     @Autowired
     private WorkspaceRepository workspaceRepository;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     public Workspace createWorkspace(String pathStr) {
         logger.info("Attempting to create workspace at: {}", pathStr);
 
@@ -58,7 +61,11 @@ public class WorkspaceService {
 
         Workspace workspace = new Workspace();
         workspace.setPath(pathStr);
-        return workspaceRepository.save(workspace);
+        Workspace savedWorkspace = workspaceRepository.save(workspace);
+
+        auditLogService.logWorkspaceCreated(pathStr);
+
+        return savedWorkspace;
     }
 
     public Workspace getCurrentWorkspace() {

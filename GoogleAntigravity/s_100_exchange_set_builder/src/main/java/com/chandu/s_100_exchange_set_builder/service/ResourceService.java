@@ -28,6 +28,9 @@ public class ResourceService {
     @Autowired
     private CryptoUtils cryptoUtils;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     public Resource addResource(MultipartFile file, ResourceType type) throws Exception {
         Workspace workspace = workspaceService.getCurrentWorkspace();
         String fileName = file.getOriginalFilename();
@@ -60,7 +63,9 @@ public class ResourceService {
         resource.setFileType(type);
         resource.setFilePath(targetPath.toString());
 
-        return resourceRepository.save(resource);
+        Resource savedResource = resourceRepository.save(resource);
+        auditLogService.logResourceAdded(fileName, type.toString());
+        return savedResource;
     }
 
     public List<Resource> getAllResources() {

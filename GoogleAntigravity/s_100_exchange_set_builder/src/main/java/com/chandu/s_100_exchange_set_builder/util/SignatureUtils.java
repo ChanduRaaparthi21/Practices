@@ -38,8 +38,16 @@ public class SignatureUtils {
 
             if (object instanceof PEMKeyPair) {
                 return converter.getKeyPair((PEMKeyPair) object).getPrivate();
+            } else if (object instanceof org.bouncycastle.asn1.pkcs.PrivateKeyInfo) {
+                return converter.getPrivateKey((org.bouncycastle.asn1.pkcs.PrivateKeyInfo) object);
+            } else if (object instanceof org.bouncycastle.cert.X509CertificateHolder) {
+                throw new IllegalArgumentException(
+                        "The provided file is a Certificate, not a Private Key. Please provide a valid Private Key file (usually .pem or .key).");
+            } else if (object instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+                throw new IllegalArgumentException(
+                        "The provided file is a Public Key, not a Private Key. Please provide a valid Private Key file.");
             } else {
-                throw new IllegalArgumentException("Invalid private key format");
+                throw new IllegalArgumentException("Invalid private key format: " + object.getClass().getName());
             }
         }
     }

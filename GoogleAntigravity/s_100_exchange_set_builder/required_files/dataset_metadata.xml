@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Metadata>
+    <Title>Sample Dataset Metadata</Title>
+    <Abstract>This is a sample dataset for testing the S-100 Exchange Set Builder.</Abstract>
+    <TopicCategory>oceans</TopicCategory>
+    <ResponsibleParty>
+        <OrganisationName>Google Antigravity</OrganisationName>
+        <Role>originator</Role>
+    </ResponsibleParty>
+    <DateStamp>2025-11-26</DateStamp>
+</Metadata>

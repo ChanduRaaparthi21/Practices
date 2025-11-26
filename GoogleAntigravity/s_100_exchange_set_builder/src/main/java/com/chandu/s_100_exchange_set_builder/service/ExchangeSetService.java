@@ -41,6 +41,9 @@ public class ExchangeSetService {
     @Autowired
     private PackageUtils packageUtils;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Transactional
     public ExchangeSet createExchangeSet(String name) throws IOException {
         Workspace workspace = workspaceService.getCurrentWorkspace();
@@ -64,7 +67,9 @@ public class ExchangeSetService {
         File catalogFile = exchangeSetPath.resolve("CATALOG.XML").toFile();
         xmlGenerator.generateCatalogXml(exchangeSet, catalogFile);
 
-        return exchangeSetRepository.save(exchangeSet);
+        ExchangeSet savedExchangeSet = exchangeSetRepository.save(exchangeSet);
+        auditLogService.logExchangeSetCreated(name);
+        return savedExchangeSet;
     }
 
     public List<ExchangeSet> getAllExchangeSets() {
@@ -122,6 +127,8 @@ public class ExchangeSetService {
 
         File signatureFile = new File(exchangeSetDir, "CATALOG.SIGN");
         signatureUtils.signFile(catalogFile, new File(privateKey.getFilePath()), signatureFile);
+
+        auditLogService.logExchangeSetSigned(exchangeSet.getName());
     }
 
     public File packageExchangeSet(Long id) throws IOException {
@@ -149,6 +156,9 @@ public class ExchangeSetService {
                                                                                         // directory
 
         packageUtils.zipDirectory(sourceDir, zipFile);
+
+        auditLogService.logExchangeSetPackaged(exchangeSet.getName());
+
         return zipFile;
     }
 }
