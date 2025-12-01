@@ -1,0 +1,3 @@
+com\chandu\product\model\ProductResponse.class
+com\chandu\product\controller\ProductController.class
+com\chandu\product\ProductServiceApplication.class

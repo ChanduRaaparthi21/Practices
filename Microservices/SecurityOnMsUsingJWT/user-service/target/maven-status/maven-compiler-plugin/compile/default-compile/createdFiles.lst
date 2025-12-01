@@ -1,0 +1,5 @@
+com\chandu\user\model\UserWithProductResponse.class
+com\chandu\user\controller\UserController.class
+com\chandu\user\model\ProductResponse.class
+com\chandu\user\client\ProductClient.class
+com\chandu\user\UserServiceApplication.class
