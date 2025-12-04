@@ -15,15 +15,16 @@ import java.util.List;
 
 @Service
 public class ExcelReaderService {
+
     private static final Logger logger = LoggerFactory.getLogger(ExcelReaderService.class);
 
     @Value("${excel.file.path}")
     private String filePath;
 
     public List<HrDetails> readHrDetails() {
-        List<HrDetails> hrDetailsList = new ArrayList<>();
+        List<HrDetails> hrList = new ArrayList<>();
 
-        logger.info("Reading HR details from Excel file: {}", filePath);
+        logger.info("Reading HR details from Excel: {}", filePath);
 
         try (FileInputStream file = new FileInputStream(filePath);
              Workbook workbook = new XSSFWorkbook(file)) {
@@ -31,76 +32,56 @@ public class ExcelReaderService {
             Sheet sheet = workbook.getSheetAt(0);
             int totalRows = sheet.getPhysicalNumberOfRows();
 
-            logger.info("Total Rows Found: {}", totalRows);
-
-            // Validate at least one data row exists
             if (totalRows <= 1) {
-                logger.warn("Excel file has no data rows (only header)");
-                return hrDetailsList;
+                logger.warn("Excel contains only header, no HR rows.");
+                return hrList;
             }
 
-            for (int i = 1; i < totalRows; i++) { // Start from row 1 (skip header)
+            for (int i = 1; i < totalRows; i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) {
-                    logger.debug("Skipped empty row at index {}", i);
+                if (row == null) continue;
+
+                String companyName = getCellValue(row, 0);
+                String email = getCellValue(row, 1);
+                String location = getCellValue(row, 2);
+                String experience = getCellValue(row, 3);
+
+                if (email.isEmpty() || !isValidEmail(email)) {
+                    logger.warn("Skipping invalid email at row {}: {}", i, email);
                     continue;
                 }
 
-                String hrName = getCellValue(row, 1); // Column B
-                String hrEmail = getCellValue(row, 2).trim(); // Column C (Email)
-                String companyName = getCellValue(row, 4); // Column E
-
-                if (hrEmail.isEmpty() || !isValidEmail(hrEmail)) {
-                    logger.warn("Skipping invalid email at row {}: {} | Email: {}", i, hrName, hrEmail);
-                    continue;
-                }
-
-                logger.debug("Processing row {}: {} | Email: {} | Company: {}", i, hrName, hrEmail, companyName);
-                hrDetailsList.add(new HrDetails(hrName, hrEmail, companyName));
+                hrList.add(new HrDetails(companyName, email, location, experience));
             }
 
-            logger.info("Successfully read {} valid HR contacts from Excel", hrDetailsList.size());
+            logger.info("Total Valid HR Records: {}", hrList.size());
 
         } catch (IOException e) {
-            logger.error("Error reading Excel file: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to read HR details from Excel file", e);
+            logger.error("Error reading Excel file: {}", e.getMessage());
+            throw new RuntimeException("Could not read Excel file", e);
         }
 
-        return hrDetailsList;
+        return hrList;
     }
 
-    private String getCellValue(Row row, int columnIndex) {
-        Cell cell = row.getCell(columnIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+    private String getCellValue(Row row, int col) {
+        Cell cell = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (cell == null) return "";
 
         try {
-            switch (cell.getCellType()) {
-                case STRING:
-                    return cell.getStringCellValue().trim();
-                case NUMERIC:
-                    return String.valueOf((long) cell.getNumericCellValue());
-                case BOOLEAN:
-                    return String.valueOf(cell.getBooleanCellValue());
-                case FORMULA:
-                    try {
-                        return cell.getStringCellValue();
-                    } catch (Exception e) {
-                        try {
-                            return String.valueOf((long) cell.getNumericCellValue());
-                        } catch (Exception ex) {
-                            return "";
-                        }
-                    }
-                default:
-                    return "";
-            }
+            return switch (cell.getCellType()) {
+                case STRING -> cell.getStringCellValue().trim();
+                case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
+                case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+                case FORMULA -> cell.getStringCellValue();
+                default -> "";
+            };
         } catch (Exception e) {
-            logger.warn("Error reading cell [{}]: {}", columnIndex, e.getMessage());
             return "";
         }
     }
 
     private boolean isValidEmail(String email) {
-        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -37,113 +36,109 @@ public class EmailSchedulerService {
     private AtomicInteger currentIndex = new AtomicInteger(0);
     private boolean initialized = false;
 
-    // Initialize HR list only once
     public void initialize() {
         if (!initialized) {
             hrDetailsList = excelReaderService.readHrDetails();
-            if (hrDetailsList == null || hrDetailsList.isEmpty()) {
-                logger.warn("No HR details found. Scheduler will stop.");
+
+            if (hrDetailsList.isEmpty()) {
+                logger.warn("No HR details found. Stopping.");
                 shutdownApplication();
                 return;
             }
-            logger.info("✅ Initialized with {} HR contacts", hrDetailsList.size());
+
+            logger.info("Loaded {} HR entries", hrDetailsList.size());
             initialized = true;
         }
     }
 
-    /**
-     * Runs every 5 seconds after the previous execution completes.
-     * Sends one email each time until all HRs are processed.
-     */
     @Scheduled(fixedDelayString = "${email.send.interval:5000}")
     public void sendNextEmail() {
-        if (!initialized) {
-            initialize();
-        }
 
-        if (hrDetailsList == null || hrDetailsList.isEmpty()) {
-            logger.warn("No HR details found. Stopping scheduler.");
+        if (!initialized) initialize();
+
+        if (currentIndex.get() >= hrDetailsList.size()) {
+            logger.info("All emails processed.");
             shutdownApplication();
             return;
         }
 
-        int index = currentIndex.getAndIncrement();
+        HrDetails hr = hrDetailsList.get(currentIndex.getAndIncrement());
 
-        if (index >= hrDetailsList.size()) {
-            logger.info("✅ All emails have been sent. Shutting down...");
-            shutdownApplication();
+        if (!isEligible(hr)) {
+            logger.info("Skipped → {} | Loc={} | Exp={}",
+                    hr.getCompanyName(), hr.getLocation(), hr.getExperience());
             return;
         }
 
-        HrDetails hrDetails = hrDetailsList.get(index);
-        sendEmailToHr(hrDetails);
-
-        logger.info("📨 Progress: {}/{} emails sent", index + 1, hrDetailsList.size());
+        sendEmailToHr(hr);
     }
 
-    /**
-     * Sends email safely with retry for transient SMTP issues.
-     */
-    private void sendEmailToHr(HrDetails hrDetails) {
-        String hrEmail = hrDetails.getHrEmail();
+    private boolean isEligible(HrDetails hr) {
 
-        // Basic email validation
-        if (hrEmail == null || hrEmail.trim().isEmpty() || !hrEmail.contains("@")) {
-            logger.warn("⚠️ Skipping invalid email: {}", hrEmail);
-            return;
+        String loc = hr.getLocation().toLowerCase();
+        boolean locationOk = loc.contains("hyderabad") || loc.contains("remote");
+
+        if (!locationOk) return false;
+
+        int exp = extractMinExperience(hr.getExperience());
+
+        return exp <= 4;
+    }
+
+    private int extractMinExperience(String expText) {
+        try {
+            String cleaned = expText.replaceAll("[^0-9]", " ").trim();
+            if (cleaned.isEmpty()) return 0;
+            return Integer.parseInt(cleaned.split(" ")[0]);
+        } catch (Exception e) {
+            return 0;
         }
+    }
 
-        String subject = "Application for Java Backend Developer | "
-                + hrDetails.getCompanyName() + " | Chandu Raparthi";
+    private void sendEmailToHr(HrDetails hr) {
+
+        String email = hr.getHrEmail();
+        if (email == null || !email.contains("@")) return;
+
+        String subject =
+                "Application for Java Backend Developer – " + hr.getCompanyName() + " | Chandu Raparthi";
 
         String body =
-                "Dear " + hrDetails.getHrName() + ",\n\n" +
+                "Dear Hiring Team,\n\n" +
                         "I hope you are doing well.\n\n" +
-                        "I'm Chandu Raparthi, a Java Backend Developer with 3 years of experience in building secure, scalable, and high-performance enterprise applications using Java, Spring Boot, and Spring Cloud microservices.\n\n" +
-                        "Currently, I’m working at Cybrowse Digital Solutions Pvt. Ltd., Hyderabad, and I’m exploring backend opportunities at "
-                        + hrDetails.getCompanyName() + ".\n\n" +
-                        "My notice period is 15 days, and I’m available to join immediately after that.\n\n" +
-                        "Please find my resume attached for your review.\n\n" +
-                        "Best regards,\n" +
-                        "Chandu Raparthi\n" +
-                        "+91 9452301058\n" +
-                        "raaparthichandu@gmail.com\n";
+                        "My name is Chandu Raparthi, and I am a Java Backend Developer with 3 years of experience " +
+                        "working with Java, Spring Boot, Microservices, REST APIs, and SQL.\n\n" +
 
-        // Try sending email with up to 3 retries
-        int maxRetries = 3;
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                emailService.sendEmailWithAttachment(hrEmail, subject, body, resumePath);
-                logger.info("✅ Email sent to: {} ({} / {})", hrEmail, attempt, maxRetries);
-                break; // success → exit retry loop
-            } catch (Exception e) {
-                logger.error("❌ Attempt {}/{} failed to send to {}: {}", attempt, maxRetries, hrEmail, e.getMessage());
-                if (attempt == maxRetries) {
-                    logger.error("🚫 Giving up on: {}", hrEmail);
-                } else {
-                    try {
-                        TimeUnit.SECONDS.sleep(5 * attempt); // exponential backoff (5s, 10s, 15s)
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
+                        "I am reaching out regarding backend opportunities at " + hr.getCompanyName() + ".\n\n" +
+
+                        "Currently, I am working at Cybrowse Digital Solutions Pvt. Ltd., Hyderabad, " +
+                        "as a Junior Java Backend Developer where I build scalable and secure enterprise applications.\n\n" +
+
+                        "📌 Preferred Location: Hyderabad or Remote\n" +
+                        "🕒 Notice Period: 15 days\n\n" +
+
+                        "Please find my resume attached for your review.\n\n" +
+
+                        "Warm regards,\n" +
+                        "Chandu Raparthi\n" +
+                        "📞 +91 9452301058\n" +
+                        "✉️ raaparthichandu@gmail.com\n";
+
+
+        try {
+            emailService.sendEmailWithAttachment(email, subject, body, resumePath);
+
+        } catch (Exception e) {
+            logger.error("Failed to send email: {}", e.getMessage());
         }
     }
 
-    /**
-     * Gracefully shuts down Spring Boot once all emails are sent.
-     */
     private void shutdownApplication() {
-        logger.info("🟢 Email sending completed. Preparing to shut down application...");
         new Thread(() -> {
             try {
-                Thread.sleep(5000); // allow last logs to flush
-                int exitCode = SpringApplication.exit(applicationContext, () -> 0);
-                System.exit(exitCode);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+                Thread.sleep(3000);
+                System.exit(SpringApplication.exit(applicationContext));
+            } catch (Exception ignored) {}
         }).start();
     }
 }

@@ -1,0 +1,48 @@
+🚀 Git: Create Branch, Commit, Push & Merge (One Page Guide)
+1. Create a new branch
+git checkout -b my-feature-branch
+
+
+Explanation: Creates a new branch and switches to it. Replace my-feature-branch with your branch name.
+
+2. Add your changed files
+git add .
+
+
+Explanation: Stages all modified files for commit.
+
+3. Commit your changes
+git commit -m "Your commit message"
+
+
+Explanation: Saves your changes in the branch with a message.
+
+4. Push the branch to GitHub
+git push -u origin my-feature-branch
+
+
+Explanation: Uploads your branch to GitHub and sets it as the default push location.
+
+5. Switch back to main
+git checkout main
+
+
+Explanation: Moves you to the main branch.
+
+6. Pull the latest updates from main
+git pull origin main
+
+
+Explanation: Ensures your local main is updated with the latest code.
+
+7. Merge your branch into main
+git merge my-feature-branch
+
+
+Explanation: Combines your branch’s changes into main.
+
+8. Push the updated main to GitHub
+git push origin main
+
+
+Explanation: Uploads the merged changes into the main branch on GitHub.
