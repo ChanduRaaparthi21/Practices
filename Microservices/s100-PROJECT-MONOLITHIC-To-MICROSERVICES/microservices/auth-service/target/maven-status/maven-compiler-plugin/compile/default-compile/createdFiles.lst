@@ -1,0 +1,12 @@
+com\chandu\authservice\model\AuthRequest.class
+com\chandu\authservice\config\JwtAuthenticationFilter.class
+com\chandu\authservice\model\RegisterRequest.class
+com\chandu\authservice\AuthServiceApplication.class
+com\chandu\authservice\repository\UserRepository.class
+com\chandu\authservice\model\AuthResponse.class
+com\chandu\authservice\util\JwtUtils.class
+com\chandu\authservice\model\User.class
+com\chandu\authservice\service\AuthService.class
+com\chandu\authservice\config\SecurityConfig.class
+com\chandu\authservice\service\CustomUserDetailsService.class
+com\chandu\authservice\controller\AuthController.class

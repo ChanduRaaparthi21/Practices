@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-100 Exchange Set Builder</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">S-100 Exchange Set Builder</div>
+            <div class="navbar-menu">
+                <a href="#" class="nav-link active" data-page="exchange-sets">Exchange Sets</a>
+                <a href="#" class="nav-link" data-page="resources">Resources</a>
+                <a href="#" class="nav-link" data-page="audit-logs">Audit Logs</a>
+                <a href="#" class="nav-link" data-page="settings">Settings</a>
+                <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Login Page -->
+            <div id="loginPage" class="page active">
+                <div class="login-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="gradient-text">Login</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="loginError" class="alert alert-danger" style="display: none;"></div>
+                            <form id="loginForm">
+                                <div class="form-group">
+                                    <label>Username</label>
+                                    <input type="text" id="loginUsername" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" id="loginPassword" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                            </form>
+                            <div class="text-center mt-3">
+                                <small class="text-secondary">Default: admin / admin123</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle">Configure workspace and authentication</p>
+                </div>
+                <div id="settingsMessage" class="alert" style="display: none;"></div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Workspace Configuration</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="workspaceForm">
+                                    <div class="form-group">
+                                        <label>Workspace Directory Path</label>
+                                        <input type="text" id="workspacePath" class="form-control" 
+                                               placeholder="C:\workspace\s100" required>
+                                        <small class="form-text">Directory where exchange sets will be stored</small>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Set Workspace</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resources Page -->
+            <div id="resourcesPage" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Resources</h1>
+                        <p class="page-subtitle">Manage signing keys and certificates</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showAddResourceModal()">+ Add Resource</button>
+                </div>
+                <div id="resourcesMessage" class="alert" style="display: none;"></div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5>All Resources</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resourcesLoading" class="text-center" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="resourcesEmpty" class="empty-state" style="display: none;">
+                            <div class="empty-state-icon">🔐</div>
+                            <div class="empty-state-text">No resources yet</div>
+                            <p>Upload signing keys and certificates to get started</p>
+                        </div>
+                        <table id="resourcesTable" class="table" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Type</th>
+                                    <th>Uploaded At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resourcesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exchange Sets Page -->
+            <div id="exchangeSetsPage" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Exchange Sets</h1>
+                        <p class="page-subtitle">Manage S-100 Exchange Sets</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showCreateExchangeSetModal()">+ Create Exchange Set</button>
+                </div>
+                <div id="exchangeSetsMessage" class="alert" style="display: none;"></div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5>All Exchange Sets</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="exchangeSetsLoading" class="text-center" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="exchangeSetsEmpty" class="empty-state" style="display: none;">
+                            <div class="empty-state-icon">📦</div>
+                            <div class="empty-state-text">No exchange sets yet</div>
+                            <p>Create your first S-100 Exchange Set to get started</p>
+                        </div>
+                        <table id="exchangeSetsTable" class="table" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exchangeSetsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Logs Page -->
+            <div id="auditLogsPage" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Audit Logs</h1>
+                    <p class="page-subtitle">View system activity and changes</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Activity Log</h5>
+                        <button class="btn btn-sm btn-primary" onclick="loadAuditLogs()">Refresh</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="auditLogsLoading" class="text-center" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                        <table id="auditLogsTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="addResourceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Add Resource</h5>
+                <span class="close" onclick="closeModal('addResourceModal')">&times;</span>
+            </div>
+            <form id="addResourceForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Resource Type</label>
+                        <select id="resourceType" class="form-control" required>
+                            <option value="PRIVATE_KEY">Private Key</option>
+                            <option value="CERTIFICATE">Certificate</option>
+                            <option value="PUBLIC_KEY">Public Key</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>File</label>
+                        <input type="file" id="resourceFile" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addResourceModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="createExchangeSetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Create Exchange Set</h5>
+                <span class="close" onclick="closeModal('createExchangeSetModal')">&times;</span>
+            </div>
+            <form id="createExchangeSetForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Exchange Set Name</label>
+                        <input type="text" id="exchangeSetName" class="form-control" 
+                               placeholder="e.g., MyExchangeSet" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createExchangeSetModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

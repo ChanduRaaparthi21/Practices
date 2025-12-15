@@ -1,0 +1,5 @@
+com\chandu\auditservice\AuditServiceApplication.class
+com\chandu\auditservice\repository\AuditLogRepository.class
+com\chandu\auditservice\controller\AuditLogController.class
+com\chandu\auditservice\service\AuditLogService.class
+com\chandu\auditservice\model\AuditLog.class

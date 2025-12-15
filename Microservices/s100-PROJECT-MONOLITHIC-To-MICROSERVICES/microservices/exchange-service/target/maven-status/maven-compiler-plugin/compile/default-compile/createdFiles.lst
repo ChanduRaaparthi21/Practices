@@ -1,0 +1,15 @@
+com\chandu\exchangeservice\model\ExchangeSetDto.class
+com\chandu\exchangeservice\util\PackageUtils.class
+com\chandu\exchangeservice\ExchangeServiceApplication.class
+com\chandu\exchangeservice\model\ContentItem.class
+com\chandu\exchangeservice\repository\ExchangeSetRepository.class
+com\chandu\exchangeservice\util\S100XmlValidator.class
+com\chandu\exchangeservice\service\ExchangeSetService.class
+com\chandu\exchangeservice\client\AuditClient.class
+com\chandu\exchangeservice\repository\ContentItemRepository.class
+com\chandu\exchangeservice\util\S100XmlGenerator.class
+com\chandu\exchangeservice\client\ResourceClient.class
+com\chandu\exchangeservice\model\ContentType.class
+com\chandu\exchangeservice\model\ExchangeSet.class
+com\chandu\exchangeservice\util\SignatureUtils.class
+com\chandu\exchangeservice\controller\ExchangeSetController.class
