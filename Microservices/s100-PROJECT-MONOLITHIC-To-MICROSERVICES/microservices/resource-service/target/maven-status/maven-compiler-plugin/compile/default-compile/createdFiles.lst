@@ -1,8 +1,0 @@
-com\chandu\resourceservice\client\AuditClient.class
-com\chandu\resourceservice\util\CryptoUtils.class
-com\chandu\resourceservice\ResourceServiceApplication.class
-com\chandu\resourceservice\service\ResourceService.class
-com\chandu\resourceservice\model\ResourceType.class
-com\chandu\resourceservice\repository\ResourceRepository.class
-com\chandu\resourceservice\controller\ResourceController.class
-com\chandu\resourceservice\model\Resource.class
